@@ -52,6 +52,29 @@
     }
   };
 
+  var CollisionMediator = function(options) {
+    var gravity = 9.8;
+    var gravityFactor = 8.0;
+    if(options && options.hasOwnProperty('gravity') && !options.gravity) {
+      // turn gravity off
+      gravityFactor = 0;
+    }
+    this.mediateCollision = function(obj, vel, delta) {
+      // takes a game object and a velocity
+      // verifies that the game object can move at the velocity
+      // if not it returns the position closest to where the velocity
+      // would take the object.
+      var pos = { x: obj.pos.x + vel.x, y: obj.pos.y + vel.y };
+      pos.y += (gravity * gravityFactor) * delta;
+
+      // in a real game these checks would be replaced
+      // with some kind of collision check against other objects
+      if(pos.y >= 110) pos.y = 110;
+      return pos;
+    };
+  };
+
+
   var Game = function(options) {
     Game.current = this;
     this.options = options = Util.extend({}, Game.defaults, options);
@@ -59,6 +82,7 @@
     var ctx = canvas.getContext('2d');
     var _objects = options.objects || [];
     var lastFrameTime = Date.now();
+    var mediator = new CollisionMediator();
 
     this.input = InputManager;
     this.input.load();
@@ -107,6 +131,7 @@
         return;
       }
       obj.depth = obj.depth || 1;
+      obj.collisionMediator = mediator; // share mediator
       _objects.push(obj);
     };
 
