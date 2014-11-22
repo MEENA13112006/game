@@ -1,25 +1,25 @@
 var Player = function() {
-  var spritePath = 'img/simple-player.png';
+  var spritePath = 'img/rock.png';
   var ready = false;
 
   this.sprite = new SpriteSheet(spritePath, {
     cellSize: {
-      height: 24,
-      width: 24
+      height: 64,
+      width: 64
     }
   });
 
-  this.sprite.addAnim('idle', 1, [0]);
-  this.sprite.addAnim('move', 0.15, [0,1,2,3], true);
-  this.sprite.addAnim('jump', 1, [3]);
+  this.sprite.addAnim('idle', 0.2, [30,31,32,33,34], true);
+  this.sprite.addAnim('move', 0.05, [3,4,5,6,7,8,9,10], true);
+  this.sprite.addAnim('jump', 1, [21]);
 
-  this.speed = 25;
+  this.speed = 250;
   this.jumpHeight = 500;
 
   this.update = function(delta, input) {
     this.sprite.currentAnimation = 'idle';
     var vel = { x: 0, y: 0 };
-    if(input.keys.up) {
+    if(input.keys.up || vel.y != 0) {
       vel.y -= this.jumpHeight * delta;
       this.sprite.currentAnimation = 'jump';
     }

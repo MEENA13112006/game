@@ -52,20 +52,23 @@
     }
   };
 
-  var CollisionMediator = function(options) {
-    var gravity = 9.8;
-    var gravityFactor = 8.0;
-    if(options && options.hasOwnProperty('gravity') && !options.gravity) {
-      // turn gravity off
-      gravityFactor = 0;
+  var Physics = {
+    gravity: 9.8,
+    gravityFactor: 8.0,
+    applyGravity: function(vel, delta) {
+      vel.y += (this.gravity * this.gravityFactor) * delta;
+      return vel;
     }
+  };
+
+  var CollisionMediator = function(options) {
     this.mediateCollision = function(obj, vel, delta) {
+      vel = Physics.applyGravity(vel, delta);
       // takes a game object and a velocity
       // verifies that the game object can move at the velocity
       // if not it returns the position closest to where the velocity
       // would take the object.
       var pos = { x: obj.pos.x + vel.x, y: obj.pos.y + vel.y };
-      pos.y += (gravity * gravityFactor) * delta;
 
       // in a real game these checks would be replaced
       // with some kind of collision check against other objects
@@ -86,20 +89,6 @@
 
     this.input = InputManager;
     this.input.load();
-
-
-    // internal abstraction over request anim frame
-    // because browser API design is apparently hard
-    var requestAnimFrame = (function(callback) {
-      return window.requestAnimationFrame  ||
-        window.webkitRequestAnimationFrame ||
-        window.mozRequestAnimationFrame    ||
-        window.oRequestAnimationFrame      ||
-        window.msRequestAnimationFrame     ||
-        function(callback) {
-          window.setTimeout(callback, 1000 / options.fps);
-        };
-    })();
 
     var update = this.update = function() {
       var now = Date.now();
@@ -131,6 +120,7 @@
         return;
       }
       obj.depth = obj.depth || 1;
+      obj.physics = Physics; // share physics
       obj.collisionMediator = mediator; // share mediator
       _objects.push(obj);
     };
@@ -147,7 +137,7 @@
     var loop = function() {
       update();
       draw();
-      requestAnimationFrame(loop);
+      window.requestAnimationFrame(loop);
     };
 
     // when the document is ready, start loading the assets
